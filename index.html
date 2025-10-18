@@ -315,6 +315,10 @@
                 // Use filtered slots for the rest of the function
                 const processedSlots = filteredSlots;
                 
+                // Log unique day values to debug any mismatches
+                const uniqueDays = new Set(processedSlots.map(slot => slot.day));
+                console.log('Unique day values found:', Array.from(uniqueDays));
+                
                 // Group by day
                 const slotsByDay = {
                     'Monday': [],
@@ -324,8 +328,14 @@
                 };
                 
                 processedSlots.forEach(slot => {
-                    if (slotsByDay[slot.day]) {
-                        slotsByDay[slot.day].push(slot);
+                    // Normalize day name: trim whitespace and capitalize properly
+                    const dayKey = slot.day.trim();
+                    const normalizedDay = dayKey.charAt(0).toUpperCase() + dayKey.slice(1).toLowerCase();
+                    
+                    if (slotsByDay[normalizedDay]) {
+                        slotsByDay[normalizedDay].push(slot);
+                    } else {
+                        console.warn('Unknown day name (not Monday/Tuesday/Wednesday/Friday):', slot.day, 'for slot:', slot);
                     }
                 });
                 
