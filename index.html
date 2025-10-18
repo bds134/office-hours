@@ -184,6 +184,7 @@
             <p><strong>Meeting Duration:</strong> 20-30 minutes</p>
             <p><strong>How to book:</strong> Click an available time slot below to open the booking form.</p>
             <p><strong>Location:</strong> Each slot is either <em>by Zoom</em> or <em>in LT 713</em> as shown below.</p>
+            <p><strong>Confirmation:</strong> You will receive an email with meeting details after booking.</p>
         </div>
         
         <div id="loading" class="loading">
@@ -288,8 +289,6 @@
                     const [date, day, time, studentName, studentEmail, status, location] = row.split(',').map(s => s.trim());
                     return { date, day, time, studentName, studentEmail, status, location };
                 }).filter(slot => slot.date); // Remove empty rows
-
-                console.log('Loaded slots:', slots);
                 
                 // Get current time in user's local timezone
                 const now = new Date();
@@ -309,15 +308,9 @@
                     // Only filter out slots that are within 4 hours from now
                     return slotDateTime >= fourHoursFromNow;
                 });
-
-                console.log('Filtered slots:', filteredSlots);
                 
                 // Use filtered slots for the rest of the function
                 const processedSlots = filteredSlots;
-                
-                // Log unique day values to debug any mismatches
-                const uniqueDays = new Set(processedSlots.map(slot => slot.day));
-                console.log('Unique day values found:', Array.from(uniqueDays));
                 
                 // Group by BOTH day and date (to separate Oct 21 Tuesday from Oct 28 Tuesday, etc.)
                 const slotsByDayAndDate = {};
@@ -335,8 +328,6 @@
                     }
                     slotsByDayAndDate[key].push(slot);
                 });
-                
-                console.log('Grouped slots by day+date:', slotsByDayAndDate);
                 
                 // Render
                 container.innerHTML = '';
