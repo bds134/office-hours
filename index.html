@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Office Hours Booking - Dr. Skopyk</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .subtitle {
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .info-box {
+            background: #edf2f7;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+        
+        .info-box p {
+            color: #4a5568;
+            line-height: 1.6;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+            font-size: 1.1em;
+        }
+        
+        .day-section {
+            margin-bottom: 30px;
+        }
+        
+        .day-header {
+            background: #667eea;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .slot {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .slot.available {
+            cursor: pointer;
+            border-color: #48bb78;
+        }
+        
+        .slot.available:hover {
+            background: #48bb78;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+        }
+        
+        .slot.booked {
+            background: #fed7d7;
+            border-color: #fc8181;
+            color: #c53030;
+            cursor: not-allowed;
+        }
+        
+        .slot-time {
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        
+        .slot-status {
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .no-slots {
+            color: #718096;
+            font-style: italic;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .location-badge {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.4);
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.8em;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .book-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .book-button:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .refresh-note {
+            text-align: center;
+            margin-top: 20px;
+            color: #718096;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 Office Hours Booking</h1>
+        <p class="subtitle">Book a meeting with Dr. Skopyk</p>
+        <div class="info-box">
+            <p><strong>Meeting Duration:</strong> 20-30 minutes</p>
+            <p><strong>How to book:</strong> Click an available time slot below to open the booking form.</p>
+            <p><strong>Location:</strong> Each slot is either <em>by Zoom</em> or <em>in LT 713</em> as shown below.</p>
+        </div>
+        
+        <div id="loading" class="loading">
+            Loading available time slots...
+        </div>
+        
+        <div id="slots-container"></div>
+        
+        <div class="refresh-note">
+            Page auto-refreshes every 10 seconds. <button id="refresh-now" class="book-button" style="padding:8px 16px; font-size:0.9em; margin-left:8px;">Refresh now</button>
+            <div style="margin-top:8px; font-size:0.85em;">Last updated: <span id="last-updated">—</span></div>
+        </div>
+    </div>
+
+    <script>
+        // Google Sheets published CSV URL
+        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTU53HR8jEbuHHCiqzk4IjCvL5trVSZswvZ79JKr4NGDOXNdEH8uioLP2qv6k1qIZaSh7-2qmLjIRvC/pub?gid=0&single=true&output=csv';
+        const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdt24zyLVx0eDYbYJNlI6vR6nKcqbKl5sLG7FSOjjPb0-QtPA/viewform';
+        
+        let selectedSlot = null;
+
+        // Location labels per day
+        const DAY_LOCATION_LABELS = {
+            'Monday': 'Zoom',
+            'Tuesday': 'Office (LT 713)',
+            'Wednesday': 'Office (LT 713)',
+            'Friday': 'Zoom'
+        };
+
+        // Build a cache-busted URL to avoid stale CSV caching
+        function buildCsvUrl() {
+            const sep = SHEET_URL.includes('?') ? '&' : '?';
+            return `${SHEET_URL}${sep}_=${Date.now()}`;
+        }
+
+        // Parse slot date and time into a JavaScript Date object
+        function parseSlotDateTime(dateStr, timeStr) {
+            try {
+                // Date format is like "Oct 20" or "Oct 21"
+                // Time format is like "2:00 PM" or "10:30 AM"
+                
+                // Get the current year (assuming slots are in the current year)
+                const currentYear = new Date().getFullYear();
+                
+                // Parse the date - dateStr is like "Oct 20"
+                const dateParts = dateStr.split(' ');
+                if (dateParts.length !== 2) {
+                    return null;
+                }
+                
+                const monthStr = dateParts[0];
+                const day = parseInt(dateParts[1]);
+                
+                // Create a date string that JavaScript can parse
+                const dateString = `${monthStr} ${day}, ${currentYear}`;
+                
+                // Parse time - timeStr is like "2:00 PM" or "10:30 AM"
+                const timeMatch = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+                if (!timeMatch) {
+                    return null;
+                }
+                
+                let hours = parseInt(timeMatch[1]);
+                const minutes = parseInt(timeMatch[2]);
+                const ampm = timeMatch[3].toUpperCase();
+                
+                // Convert to 24-hour format
+                if (ampm === 'PM' && hours !== 12) {
+                    hours += 12;
+                } else if (ampm === 'AM' && hours === 12) {
+                    hours = 0;
+                }
+                
+                // Create the full date-time object
+                const slotDate = new Date(dateString);
+                slotDate.setHours(hours, minutes, 0, 0);
+                
+                // Return null if the date is invalid
+                if (isNaN(slotDate.getTime())) {
+                    return null;
+                }
+                
+                return slotDate;
+            } catch (error) {
+                console.error('Error parsing slot date/time:', error);
+                return null;
+            }
+        }
+
+        async function loadSlots() {
+            const loading = document.getElementById('loading');
+            const container = document.getElementById('slots-container');
+            
+            try {
+                // Fetch data from Google Sheets (published as CSV) with cache-busting
+                const response = await fetch(buildCsvUrl(), { cache: 'no-store' });
+                const text = await response.text();
+                
+                // Parse CSV
+                const rows = text.split('\n').slice(1); // Skip header
+                const slots = rows.map(row => {
+                    const [date, day, time, studentName, studentEmail, status, location] = row.split(',').map(s => s.trim());
+                    return { date, day, time, studentName, studentEmail, status, location };
+                }).filter(slot => slot.date); // Remove empty rows
+
+                console.log('Loaded slots:', slots);
+                
+                // Get current time in user's local timezone
+                const now = new Date();
+                const fourHoursFromNow = new Date(now.getTime() + (4 * 60 * 60 * 1000));
+                
+                // Filter slots to exclude those within 4 hours from current time
+                const filteredSlots = slots.filter(slot => {
+                    // Parse the slot's date and time
+                    // Date format is expected to be like "Oct 20" or "Oct 21"
+                    const slotDateTime = parseSlotDateTime(slot.date, slot.time);
+                    
+                    // If parsing fails, keep the slot (fail open)
+                    if (!slotDateTime) {
+                        return true;
+                    }
+                    
+                    // Only filter out slots that are within 4 hours from now
+                    return slotDateTime >= fourHoursFromNow;
+                });
+
+                console.log('Filtered slots:', filteredSlots);
+                
+                // Use filtered slots for the rest of the function
+                const processedSlots = filteredSlots;
+                
+                // Group by day
+                const slotsByDay = {
+                    'Monday': [],
+                    'Tuesday': [],
+                    'Wednesday': [],
+                    'Friday': []
+                };
+                
+                processedSlots.forEach(slot => {
+                    if (slotsByDay[slot.day]) {
+                        slotsByDay[slot.day].push(slot);
+                    }
+                });
+                
+                // Render
+                container.innerHTML = '';
+                loading.style.display = 'none';
+                
+                Object.entries(slotsByDay).forEach(([day, daySlots]) => {
+                    if (daySlots.length === 0) return;
+                    
+                    const section = document.createElement('div');
+                    section.className = 'day-section';
+                    
+                    const header = document.createElement('div');
+                    header.className = 'day-header';
+                    header.textContent = `${day}, ${daySlots[0].date}`;
+                    section.appendChild(header);
+                    
+                    const grid = document.createElement('div');
+                    grid.className = 'slots-grid';
+                    
+                    daySlots.forEach(slot => {
+                        const slotDiv = document.createElement('div');
+                        slotDiv.className = `slot ${slot.status.toLowerCase()}`;
+                        
+                        const timeDiv = document.createElement('div');
+                        timeDiv.className = 'slot-time';
+                        timeDiv.textContent = slot.time;
+                        
+                        const statusDiv = document.createElement('div');
+                        statusDiv.className = 'slot-status';
+                        statusDiv.textContent = slot.status === 'Available' ? '✓ Available' : '✗ Booked';
+                        
+                        // Add generic location badge
+                        if (slot.location) {
+                            const locDiv = document.createElement('div');
+                            locDiv.style.marginTop = '5px';
+                            locDiv.style.fontSize = '0.8em';
+                            locDiv.style.color = '#667eea';
+                            locDiv.style.fontWeight = '600';
+                            // Show only 'by Zoom' or 'in LT 713' (or whatever is in the location column)
+                            if (slot.location.trim().toLowerCase() === 'zoom') {
+                                locDiv.textContent = 'by Zoom';
+                            } else {
+                                locDiv.textContent = 'in ' + slot.location;
+                            }
+                            slotDiv.appendChild(timeDiv);
+                            slotDiv.appendChild(locDiv);
+                            slotDiv.appendChild(statusDiv);
+                        } else {
+                            slotDiv.appendChild(timeDiv);
+                            slotDiv.appendChild(statusDiv);
+                        }
+                        
+                        if (slot.status === 'Available') {
+                            slotDiv.addEventListener('click', () => bookSlot(slot));
+                        }
+                        
+                        grid.appendChild(slotDiv);
+                    });
+                    
+                    section.appendChild(grid);
+                    container.appendChild(section);
+                });
+                
+                if (processedSlots.length === 0) {
+                    container.innerHTML = '<div class="no-slots">No time slots available at this time.</div>';
+                }
+                const last = document.getElementById('last-updated');
+                if (last) last.textContent = new Date().toLocaleTimeString();
+                
+            } catch (error) {
+                loading.style.display = 'none';
+                container.innerHTML = `
+                    <div class="error">
+                        <strong>Error loading time slots.</strong><br>
+                        Please make sure the Google Sheet is published and the URL is correct.<br>
+                        Technical details: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        function bookSlot(slot) {
+            // Open Google Form with pre-filled data
+            const formUrl = `${GOOGLE_FORM_URL}?usp=pp_url&entry.1936538677=${encodeURIComponent(slot.day + ' ' + slot.time)}`;
+            window.open(formUrl, '_blank');
+        }
+        
+        // Load slots on page load
+        loadSlots();
+
+        // Manual refresh button
+        const btn = document.getElementById('refresh-now');
+        if (btn) btn.addEventListener('click', () => loadSlots());
+
+        // Auto-refresh every 10 seconds
+        setInterval(loadSlots, 10000);
+    </script>
+</body>
+</html>
