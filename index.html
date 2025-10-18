@@ -319,31 +319,30 @@
                 const uniqueDays = new Set(processedSlots.map(slot => slot.day));
                 console.log('Unique day values found:', Array.from(uniqueDays));
                 
-                // Group by day
-                const slotsByDay = {
-                    'Monday': [],
-                    'Tuesday': [],
-                    'Wednesday': [],
-                    'Friday': []
-                };
+                // Group by BOTH day and date (to separate Oct 21 Tuesday from Oct 28 Tuesday, etc.)
+                const slotsByDayAndDate = {};
                 
                 processedSlots.forEach(slot => {
                     // Normalize day name: trim whitespace and capitalize properly
                     const dayKey = slot.day.trim();
                     const normalizedDay = dayKey.charAt(0).toUpperCase() + dayKey.slice(1).toLowerCase();
                     
-                    if (slotsByDay[normalizedDay]) {
-                        slotsByDay[normalizedDay].push(slot);
-                    } else {
-                        console.warn('Unknown day name (not Monday/Tuesday/Wednesday/Friday):', slot.day, 'for slot:', slot);
+                    // Create a unique key for each day+date combination
+                    const key = `${normalizedDay}, ${slot.date}`;
+                    
+                    if (!slotsByDayAndDate[key]) {
+                        slotsByDayAndDate[key] = [];
                     }
+                    slotsByDayAndDate[key].push(slot);
                 });
+                
+                console.log('Grouped slots by day+date:', slotsByDayAndDate);
                 
                 // Render
                 container.innerHTML = '';
                 loading.style.display = 'none';
                 
-                Object.entries(slotsByDay).forEach(([day, daySlots]) => {
+                Object.entries(slotsByDayAndDate).forEach(([dayAndDate, daySlots]) => {
                     if (daySlots.length === 0) return;
                     
                     const section = document.createElement('div');
@@ -351,7 +350,7 @@
                     
                     const header = document.createElement('div');
                     header.className = 'day-header';
-                    header.textContent = `${day}, ${daySlots[0].date}`;
+                    header.textContent = dayAndDate;  // Already formatted as "Day, Date"
                     section.appendChild(header);
                     
                     const grid = document.createElement('div');
