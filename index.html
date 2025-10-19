@@ -192,6 +192,20 @@
         </div>
         
         <div id="slots-container"></div>
+
+            <!-- Booking Modal -->
+            <div id="booking-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:1000; align-items:center; justify-content:center;">
+                <div style="background:#fff; max-width:400px; margin:auto; border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,0.3); padding:24px;">
+                    <div id="modal-slot" style="font-weight:600; margin-bottom:12px; color:#2d3748;"></div>
+                    <label>Full name<br><input id="modal-name" type="text" style="width:100%;margin-bottom:10px;"></label>
+                    <label>Email<br><input id="modal-email" type="email" style="width:100%;margin-bottom:10px;" placeholder="you@binghamton.edu"></label>
+                    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
+                        <button id="modal-cancel" type="button" class="book-button" style="background:#a0aec0;">Cancel</button>
+                        <button id="modal-submit" type="button" class="book-button">Submit booking</button>
+                    </div>
+                    <div id="modal-error" style="color:#c53030; font-size:0.95em; margin-top:8px; display:none;"></div>
+                </div>
+            </div>
         
         <div class="refresh-note">
             Page auto-refreshes every 10 seconds. <button id="refresh-now" class="book-button" style="padding:8px 16px; font-size:0.9em; margin-left:8px;">Refresh now</button>
@@ -410,17 +424,78 @@
         }
         
         function bookSlot(slot) {
-            // Open Google Form with pre-filled data
-            const formUrl = `${GOOGLE_FORM_URL}?usp=pp_url&entry.1936538677=${encodeURIComponent(slot.day + ' ' + slot.time)}`;
-            window.open(formUrl, '_blank');
+            openBookingModal(slot);
+        }
+
+        function openBookingModal(slot) {
+            selectedSlot = slot;
+            document.getElementById('modal-slot').textContent = `${slot.day}, ${slot.date} — ${slot.time}`;
+            document.getElementById('modal-name').value = '';
+            document.getElementById('modal-email').value = '';
+            document.getElementById('modal-error').style.display = 'none';
+            document.getElementById('booking-modal').style.display = 'flex';
+        }
+
+        function closeBookingModal() {
+            document.getElementById('booking-modal').style.display = 'none';
+        }
+
+        async function submitBooking() {
+            if (!selectedSlot) return;
+            const name = document.getElementById('modal-name').value.trim();
+            const email = document.getElementById('modal-email').value.trim();
+            const errorDiv = document.getElementById('modal-error');
+            errorDiv.style.display = 'none';
+            if (!name || !email) {
+                errorDiv.textContent = 'Please enter your name and email.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            if (!/@binghamton\.edu$/i.test(email)) {
+                errorDiv.textContent = 'Please use your @binghamton.edu email address.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            // POST to Apps Script Web App
+            const endpoint = 'https://script.google.com/macros/s/AKfycby8ZWlc65sfjPARyXkKdbZhktpQwhZLtGqwn-vynPWVeo5Xrw3Gbm77n-1Rl_tdcjA/exec';
+            const payload = new URLSearchParams({
+                date: selectedSlot.date,
+                day: selectedSlot.day,
+                time: selectedSlot.time,
+                name,
+                email
+            });
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: payload.toString()
+                });
+                const text = await res.text();
+                if (text.trim().toLowerCase() === 'success') {
+                    closeBookingModal();
+                    alert('Booking submitted! You will receive a confirmation email.');
+                    setTimeout(() => loadSlots(), 2000);
+                } else {
+                    errorDiv.textContent = text;
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errorDiv.textContent = 'Network error. Please try again.';
+                errorDiv.style.display = 'block';
+            }
         }
         
         // Load slots on page load
         loadSlots();
 
-        // Manual refresh button
-        const btn = document.getElementById('refresh-now');
-        if (btn) btn.addEventListener('click', () => loadSlots());
+    // Manual refresh button
+    const btn = document.getElementById('refresh-now');
+    if (btn) btn.addEventListener('click', () => loadSlots());
+
+    // Modal buttons
+    document.getElementById('modal-cancel').addEventListener('click', closeBookingModal);
+    document.getElementById('modal-submit').addEventListener('click', submitBooking);
 
         // Auto-refresh every 10 seconds
         setInterval(loadSlots, 10000);
