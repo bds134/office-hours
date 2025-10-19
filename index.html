@@ -509,7 +509,7 @@
                 return;
             }
             // POST to Vercel proxy (CORS handled by proxy)
-            const endpoint = 'https://office-hours-94al5j2oa-brads-projects-7fbf4f81.vercel.app/api/proxy';
+            const endpoint = 'https://office-hours-fstjny9xt-brads-projects-7fbf4f81.vercel.app/api/proxy';
             const params = new URLSearchParams({ slotKey: selectedSlotKey, name, email });
             try {
                 const res = await fetch(endpoint, {
