@@ -267,7 +267,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>📅 Office Hours Booking</h1>
+        <h1>📅 Office Hours Booking 235</h1>
         <p class="subtitle">Book a meeting with Dr. Skopyk <br>Dept. of History - Binghamton University (SUNY)</p>
         <div class="info-box">
             <p><strong>Meeting Duration:</strong> 20-30 minutes</p>
@@ -612,21 +612,54 @@
             // Hint button name common to Forms
             addField('submit', 'Submit');
 
+            // Background submit with fallback if it doesn't seem to complete
+            const iframe = document.getElementById('hidden_iframe');
+            let fallbackOpened = false;
+            let submitted = false;
+
+            const onIframeLoad = () => {
+                submitted = true;
+                // Success toast
+                const t = document.getElementById('toast');
+                if (t) {
+                    t.textContent = 'Booking submitted. It may take up to a minute to appear.';
+                    t.style.display = 'block';
+                    setTimeout(() => { t.style.display = 'none'; }, 3500);
+                }
+                // Refresh after a short delay
+                setTimeout(() => loadSlots(), 5000);
+                // Clean up handler
+                if (iframe) iframe.removeEventListener('load', onIframeLoad);
+            };
+            if (iframe) iframe.addEventListener('load', onIframeLoad);
+
             document.body.appendChild(form);
             form.submit();
             document.body.removeChild(form);
 
             closeBookingModal();
-            // Show a small success toast
-            (function(){
-                const t = document.getElementById('toast');
-                if (!t) return;
-                t.textContent = 'Booking submitted. Check your email for details.';
-                t.style.display = 'block';
-                setTimeout(() => { t.style.display = 'none'; }, 3000);
-            })();
-            // Refresh availability shortly after
-            setTimeout(() => loadSlots(), 2000);
+
+            // If we don't get an iframe load within 5 seconds, open full form as fallback
+            setTimeout(() => {
+                if (!submitted && !fallbackOpened) {
+                    fallbackOpened = true;
+                    // Open the full form pre-filled so the user can finalize manually
+                    const params = new URLSearchParams();
+                    params.set('usp', 'pp_url');
+                    params.set(`entry.${FORM_ENTRY_IDS.timeSlot}`, `${selectedSlot.day} ${selectedSlot.time}`);
+                    params.set(`entry.${FORM_ENTRY_IDS.name}`, name);
+                    params.set(`entry.${FORM_ENTRY_IDS.email}`, email);
+                    if (optional) params.set(`entry.${FORM_ENTRY_IDS.optional}`, optional);
+                    const url = `${GOOGLE_FORM_URL}?${params.toString()}`;
+                    window.open(url, '_blank');
+                    const t = document.getElementById('toast');
+                    if (t) {
+                        t.textContent = 'Opening Google Form to complete submission…';
+                        t.style.display = 'block';
+                        setTimeout(() => { t.style.display = 'none'; }, 3500);
+                    }
+                }
+            }, 5000);
         }
 
         function openFullFormPrefilled() {
