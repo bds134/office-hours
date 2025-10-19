@@ -176,6 +176,14 @@
             font-size: 0.9em;
         }
 
+        /* Small field-level error */
+        .field-error {
+            color: #c53030;
+            font-size: 0.9em;
+            margin-top: 6px;
+            display: none;
+        }
+
         /* Booking modal */
         .modal-overlay {
             position: fixed;
@@ -239,6 +247,22 @@
             font-size: 0.85em;
             color: #718096;
         }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 20px;
+            transform: translateX(-50%);
+            background: #48bb78;
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1100;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -264,6 +288,12 @@
         </div>
     </div>
 
+    <!-- Hidden iframe for background form submission -->
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+
+    <!-- Success toast -->
+    <div id="toast" class="toast">Booking submitted.</div>
+
     <!-- Booking Modal (hidden by default) -->
     <div id="booking-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="booking-title">
         <div class="modal">
@@ -274,7 +304,8 @@
                     <input id="modal-name" type="text" autocomplete="name" placeholder="Your full name" required>
                 </label>
                 <label style="margin-top:10px; display:block;">Email
-                    <input id="modal-email" type="email" autocomplete="email" placeholder="you@binghamton.edu" required>
+                    <input id="modal-email" type="email" autocomplete="email" placeholder="you@binghamton.edu" required pattern="^[^@\s]+@binghamton\.edu$" title="Please use your @binghamton.edu email address">
+                    <div id="email-error" class="field-error">Please use your @binghamton.edu email address.</div>
                 </label>
                 <label style="margin-top:10px; display:block;">Optional / Concerns
                     <textarea id="modal-optional" placeholder="Anything you'd like me to know (optional)"></textarea>
@@ -518,10 +549,12 @@
             const nameInput = document.getElementById('modal-name');
             const emailInput = document.getElementById('modal-email');
             const optInput = document.getElementById('modal-optional');
+            const emailErr = document.getElementById('email-error');
             if (slotDiv) slotDiv.textContent = `${slot.day}, ${slot.date} — ${slot.time}`;
             if (nameInput) nameInput.value = '';
             if (emailInput) emailInput.value = '';
             if (optInput) optInput.value = '';
+            if (emailErr) emailErr.style.display = 'none';
             if (overlay) overlay.style.display = 'flex';
         }
 
@@ -535,10 +568,19 @@
             const name = document.getElementById('modal-name')?.value?.trim();
             const email = document.getElementById('modal-email')?.value?.trim();
             const optional = document.getElementById('modal-optional')?.value?.trim();
+            const emailErr = document.getElementById('email-error');
 
             if (!name || !email) {
                 alert('Please enter your name and email.');
                 return;
+            }
+
+            const domainOk = /@binghamton\.edu$/i.test(email);
+            if (!domainOk) {
+                if (emailErr) emailErr.style.display = 'block';
+                return;
+            } else {
+                if (emailErr) emailErr.style.display = 'none';
             }
 
             // Build slot value exactly as the Google Form expects
@@ -548,7 +590,8 @@
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = GOOGLE_FORM_RESPONSE_URL;
-            form.target = '_blank';
+            // Submit to a hidden iframe so users aren't redirected to Google Forms UI
+            form.target = 'hidden_iframe';
 
             const addField = (n, v) => {
                 const input = document.createElement('input');
@@ -565,19 +608,23 @@
             // Optional field
             if (optional) addField(`entry.${FORM_ENTRY_IDS.optional}`, optional);
 
-            // Optional extras that Forms may include (not required)
-            addField('fvv', '1');
-            addField('fbzx', Date.now().toString());
-            addField('partialResponse', '');
-            addField('pageHistory', '0');
+            // Keep payload minimal; extra fields can trigger draft/resume UX
 
             document.body.appendChild(form);
             form.submit();
             document.body.removeChild(form);
 
             closeBookingModal();
+            // Show a small success toast
+            (function(){
+                const t = document.getElementById('toast');
+                if (!t) return;
+                t.textContent = 'Booking submitted. Check your email for details.';
+                t.style.display = 'block';
+                setTimeout(() => { t.style.display = 'none'; }, 3000);
+            })();
             // Refresh availability shortly after
-            setTimeout(() => loadSlots(), 1500);
+            setTimeout(() => loadSlots(), 2000);
         }
         
         // Load slots on page load
