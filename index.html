@@ -508,15 +508,15 @@
                 errorDiv.style.display = 'block';
                 return;
             }
-            // GET to Apps Script Web App (CORS workaround)
+            // POST to Vercel proxy (CORS handled by proxy)
             const endpoint = 'https://office-hours-94al5j2oa-brads-projects-7fbf4f81.vercel.app/api/proxy';
-            const params = new URLSearchParams({
-                slotKey: selectedSlotKey,
-                name,
-                email
-            });
+            const params = new URLSearchParams({ slotKey: selectedSlotKey, name, email });
             try {
-                const res = await fetch(`${endpoint}?${params.toString()}`);
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params.toString()
+                });
                 const text = await res.text();
                 if (text.trim().toLowerCase() === 'success') {
                     closeBookingModal();
