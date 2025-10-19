@@ -508,19 +508,15 @@
                 errorDiv.style.display = 'block';
                 return;
             }
-            // POST to Apps Script Web App
-            const endpoint = 'https://script.google.com/macros/s/AKfycbzGHsDH2JnHVRYfFbE9DOMxDdtSoLXcpzTMVWBnFI4ZoUZsy2spwhsfL_TloNgy7A/exec';
-            const payload = new URLSearchParams({
+            // GET to Apps Script Web App (CORS workaround)
+            const endpoint = 'https://script.google.com/macros/s/AKfycbwdsTMmq9coKSp73Nllb3O49_X5l1F9PA8ADY5tQiIGYnRWJJ45hXCjmwU70ycuwi0/exec';
+            const params = new URLSearchParams({
                 slotKey: selectedSlotKey,
                 name,
                 email
             });
             try {
-                const res = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: payload.toString()
-                });
+                const res = await fetch(`${endpoint}?${params.toString()}`);
                 const text = await res.text();
                 if (text.trim().toLowerCase() === 'success') {
                     closeBookingModal();
