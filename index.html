@@ -219,7 +219,37 @@
         const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTU53HR8jEbuHHCiqzk4IjCvL5trVSZswvZ79JKr4NGDOXNdEH8uioLP2qv6k1qIZaSh7-2qmLjIRvC/pub?gid=0&single=true&output=csv';
         const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdt24zyLVx0eDYbYJNlI6vR6nKcqbKl5sLG7FSOjjPb0-QtPA/viewform';
         
-        let selectedSlot = null;
+    let selectedSlot = null;
+    let selectedSlotKey = null;
+        // Helper: Normalize day string
+        function normalizeDay(day) {
+            if (!day) return '';
+            day = day.trim();
+            return day.charAt(0).toUpperCase() + day.slice(1).toLowerCase();
+        }
+
+        // Helper: Normalize time string to HH:MM (24h)
+        function normalizeTime(time) {
+            if (!time) return '';
+            const match = time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+            if (!match) return time.trim();
+            let h = parseInt(match[1]);
+            const m = match[2].padStart(2, '0');
+            const ampm = match[3].toUpperCase();
+            if (ampm === 'PM' && h !== 12) h += 12;
+            if (ampm === 'AM' && h === 12) h = 0;
+            return `${h.toString().padStart(2, '0')}:${m}`;
+        }
+
+        // Helper: Normalize location string
+        function normalizeLocation(loc) {
+            return (loc || '').trim().toLowerCase();
+        }
+
+        // Helper: Generate slot key
+        function slotKey(slot) {
+            return `${slot.date}|${normalizeDay(slot.day)}|${normalizeTime(slot.time)}|${normalizeLocation(slot.location)}`;
+        }
 
         // Location labels per day
         const DAY_LOCATION_LABELS = {
@@ -365,6 +395,8 @@
                     daySlots.forEach(slot => {
                         const slotDiv = document.createElement('div');
                         slotDiv.className = `slot ${slot.status.toLowerCase()}`;
+                        // Attach slotKey for booking
+                        slot._key = slotKey(slot);
                         
                         const timeDiv = document.createElement('div');
                         timeDiv.className = 'slot-time';
@@ -374,14 +406,13 @@
                         statusDiv.className = 'slot-status';
                         statusDiv.textContent = slot.status === 'Available' ? '✓ Available' : '✗ Booked';
                         
-                        // Add generic location badge
+                        // Add location information
                         if (slot.location) {
                             const locDiv = document.createElement('div');
                             locDiv.style.marginTop = '5px';
                             locDiv.style.fontSize = '0.8em';
                             locDiv.style.color = '#667eea';
                             locDiv.style.fontWeight = '600';
-                            // Show only 'by Zoom' or 'in LT 713' (or whatever is in the location column)
                             if (slot.location.trim().toLowerCase() === 'zoom') {
                                 locDiv.textContent = 'by Zoom';
                             } else {
@@ -396,7 +427,7 @@
                         }
                         
                         if (slot.status === 'Available') {
-                            slotDiv.addEventListener('click', () => bookSlot(slot));
+                            slotDiv.addEventListener('click', () => bookSlot(slot, slot._key));
                         }
                         
                         grid.appendChild(slotDiv);
@@ -422,14 +453,16 @@
                     </div>
                 `;
             }
-        }
+        } // <-- Add missing closing brace for loadSlots
         
         function bookSlot(slot) {
-            openBookingModal(slot);
+            // Accept slotKey as second arg
+            openBookingModal(slot, slot._key);
         }
 
         function openBookingModal(slot) {
             selectedSlot = slot;
+            selectedSlotKey = slot._key;
             document.getElementById('modal-slot').textContent = `${slot.day}, ${slot.date} — ${slot.time}`;
             document.getElementById('modal-name').value = '';
             document.getElementById('modal-email').value = '';
@@ -442,7 +475,7 @@
         }
 
         async function submitBooking() {
-            if (!selectedSlot) return;
+            if (!selectedSlot || !selectedSlotKey) return;
             const name = document.getElementById('modal-name').value.trim();
             const email = document.getElementById('modal-email').value.trim();
             const errorDiv = document.getElementById('modal-error');
@@ -460,9 +493,7 @@
             // POST to Apps Script Web App
             const endpoint = 'https://script.google.com/macros/s/AKfycbwPvjBHL3dlkRqJs3x84tl7w01BNhlDhjoqwcsEa5QMewmBlClcmqAaKAvOym32Cho/exec';
             const payload = new URLSearchParams({
-                date: selectedSlot.date,
-                day: selectedSlot.day,
-                time: selectedSlot.time,
+                slotKey: selectedSlotKey,
                 name,
                 email
             });
