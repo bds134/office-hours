@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Office Hours Booking - Dr. Skopyk</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
     <style>
         * {
             margin: 0;
@@ -175,100 +174,12 @@
             color: #718096;
             font-size: 0.9em;
         }
-
-        /* Small field-level error */
-        .field-error {
-            color: #c53030;
-            font-size: 0.9em;
-            margin-top: 6px;
-            display: none;
-        }
-
-        /* Booking modal */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.45);
-            display: none; /* hidden by default */
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .modal {
-            background: #fff;
-            width: 100%;
-            max-width: 460px;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            padding: 20px;
-        }
-        .modal-header {
-            font-size: 1.25em;
-            font-weight: 700;
-            color: #2d3748;
-            margin-bottom: 10px;
-        }
-        .modal-slot {
-            background: #edf2f7;
-            border-left: 4px solid #667eea;
-            padding: 10px 12px;
-            border-radius: 6px;
-            color: #4a5568;
-            margin-bottom: 12px;
-            font-weight: 600;
-        }
-        .modal-body label {
-            display: block;
-            color: #4a5568;
-            font-size: 0.95em;
-        }
-        .modal-body input[type="text"],
-        .modal-body input[type="email"],
-        .modal-body textarea {
-            width: 100%;
-            padding: 10px 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            margin-top: 6px;
-            font-size: 1em;
-        }
-        .modal-body textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-        .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 16px;
-        }
-        .modal-hint {
-            margin-top: 8px;
-            font-size: 0.85em;
-            color: #718096;
-        }
-
-        /* Toast */
-        .toast {
-            position: fixed;
-            left: 50%;
-            bottom: 20px;
-            transform: translateX(-50%);
-            background: #48bb78;
-            color: #fff;
-            padding: 10px 16px;
-            border-radius: 8px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            display: none;
-            z-index: 1100;
-            font-weight: 600;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📅 Office Hours Booking 238</h1>
-        <p class="subtitle">Book a meeting with Dr. Skopyk <br>Dept. of History - Binghamton University (SUNY)</p>
+        <h1>📅 Office Hours Booking</h1>
+        <p class="subtitle">Book a meeting with Dr. Skopyk</p>
         <div class="info-box">
             <p><strong>Meeting Duration:</strong> 20-30 minutes</p>
             <p><strong>How to book:</strong> Click an available time slot below to open the booking form.</p>
@@ -288,50 +199,10 @@
         </div>
     </div>
 
-    <!-- Hidden iframe for background form submission -->
-    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-
-    <!-- Success toast -->
-    <div id="toast" class="toast">Booking submitted.</div>
-
-    <!-- Booking Modal (hidden by default) -->
-    <div id="booking-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="booking-title">
-        <div class="modal">
-            <div id="booking-title" class="modal-header">Book time slot</div>
-            <div id="modal-slot" class="modal-slot">—</div>
-            <div class="modal-body">
-                <label>Full name
-                    <input id="modal-name" type="text" autocomplete="name" placeholder="Your full name" required>
-                </label>
-                <label style="margin-top:10px; display:block;">Email
-                    <input id="modal-email" type="email" autocomplete="email" placeholder="you@binghamton.edu" required pattern="^[^@\s]+@binghamton\.edu$" title="Please use your @binghamton.edu email address">
-                    <div id="email-error" class="field-error">Please use your @binghamton.edu email address.</div>
-                </label>
-                <label style="margin-top:10px; display:block;">Optional / Concerns
-                    <textarea id="modal-optional" placeholder="Anything you'd like me to know (optional)"></textarea>
-                </label>
-            </div>
-            <div class="modal-actions">
-                <button id="modal-cancel" type="button" class="book-button" style="background:#a0aec0;">Cancel</button>
-                <button id="modal-open-form" type="button" class="book-button" style="background:#718096;">Open full form</button>
-                <button id="modal-submit" type="button" class="book-button">Submit booking</button>
-            </div>
-            <div class="modal-hint">Your selected time will be submitted exactly as shown and cannot be changed.</div>
-        </div>
-    </div>
-
     <script>
         // Google Sheets published CSV URL
         const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTU53HR8jEbuHHCiqzk4IjCvL5trVSZswvZ79JKr4NGDOXNdEH8uioLP2qv6k1qIZaSh7-2qmLjIRvC/pub?gid=0&single=true&output=csv';
         const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdt24zyLVx0eDYbYJNlI6vR6nKcqbKl5sLG7FSOjjPb0-QtPA/viewform';
-        const GOOGLE_FORM_RESPONSE_URL = GOOGLE_FORM_URL.replace('/viewform', '/formResponse');
-        // Entry IDs you provided
-        const FORM_ENTRY_IDS = {
-            timeSlot: '1936538677',
-            name: '2016724381',
-            email: '565819357',
-            optional: '1036539128'
-        };
         
         let selectedSlot = null;
 
@@ -510,7 +381,7 @@
                         }
                         
                         if (slot.status === 'Available') {
-                            slotDiv.addEventListener('click', () => openBookingModal(slot));
+                            slotDiv.addEventListener('click', () => bookSlot(slot));
                         }
                         
                         grid.appendChild(slotDiv);
@@ -539,161 +410,17 @@
         }
         
         function bookSlot(slot) {
-            // Backward-compatible alias
-            openBookingModal(slot);
-        }
-
-        function openBookingModal(slot) {
-            selectedSlot = slot;
-            const overlay = document.getElementById('booking-modal');
-            const slotDiv = document.getElementById('modal-slot');
-            const nameInput = document.getElementById('modal-name');
-            const emailInput = document.getElementById('modal-email');
-            const optInput = document.getElementById('modal-optional');
-            const emailErr = document.getElementById('email-error');
-            if (slotDiv) slotDiv.textContent = `${slot.day}, ${slot.date} — ${slot.time}`;
-            if (nameInput) nameInput.value = '';
-            if (emailInput) emailInput.value = '';
-            if (optInput) optInput.value = '';
-            if (emailErr) emailErr.style.display = 'none';
-            if (overlay) overlay.style.display = 'flex';
-        }
-
-        function closeBookingModal() {
-            const overlay = document.getElementById('booking-modal');
-            if (overlay) overlay.style.display = 'none';
-        }
-
-        function submitBooking() {
-            if (!selectedSlot) return;
-            const name = document.getElementById('modal-name')?.value?.trim();
-            const email = document.getElementById('modal-email')?.value?.trim();
-            const optional = document.getElementById('modal-optional')?.value?.trim();
-            const emailErr = document.getElementById('email-error');
-
-            if (!name || !email) {
-                alert('Please enter your name and email.');
-                return;
-            }
-
-            const domainOk = /@binghamton\.edu$/i.test(email);
-            if (!domainOk) {
-                if (emailErr) emailErr.style.display = 'block';
-                return;
-            } else {
-                if (emailErr) emailErr.style.display = 'none';
-            }
-
-            // Build slot value exactly as the Google Form expects
-            const slotValue = `${selectedSlot.day} ${selectedSlot.time}`;
-
-            // Create a standard HTML form POST to avoid CORS issues
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = GOOGLE_FORM_RESPONSE_URL;
-            // Submit to a hidden iframe so users aren't redirected to Google Forms UI
-            form.target = 'hidden_iframe';
-
-            const addField = (n, v) => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = n;
-                input.value = v;
-                form.appendChild(input);
-            };
-
-            // Required fields
-            addField(`entry.${FORM_ENTRY_IDS.name}`, name);
-            addField(`entry.${FORM_ENTRY_IDS.email}`, email);
-            addField(`entry.${FORM_ENTRY_IDS.timeSlot}`, slotValue);
-            // Optional field
-            if (optional) addField(`entry.${FORM_ENTRY_IDS.optional}`, optional);
-
-            // Do not add a field named "submit"; it would shadow form.submit()
-
-            // Background submit with fallback if it doesn't seem to complete
-            const iframe = document.getElementById('hidden_iframe');
-            let fallbackOpened = false;
-            let submitted = false;
-
-            const onIframeLoad = () => {
-                submitted = true;
-                // Success toast
-                const t = document.getElementById('toast');
-                if (t) {
-                    t.textContent = 'Booking submitted. It may take up to a minute to appear.';
-                    t.style.display = 'block';
-                    setTimeout(() => { t.style.display = 'none'; }, 3500);
-                }
-                // Refresh after a short delay
-                setTimeout(() => loadSlots(), 5000);
-                // Clean up handler
-                if (iframe) iframe.removeEventListener('load', onIframeLoad);
-            };
-            if (iframe) iframe.addEventListener('load', onIframeLoad);
-
-            document.body.appendChild(form);
-            // Use prototype call to avoid any accidental shadowing
-            HTMLFormElement.prototype.submit.call(form);
-            document.body.removeChild(form);
-
-            closeBookingModal();
-
-            // If we don't get an iframe load within 5 seconds, open full form as fallback
-            setTimeout(() => {
-                if (!submitted && !fallbackOpened) {
-                    fallbackOpened = true;
-                    // Open the full form pre-filled so the user can finalize manually
-                    const params = new URLSearchParams();
-                    params.set('usp', 'pp_url');
-                    params.set(`entry.${FORM_ENTRY_IDS.timeSlot}`, `${selectedSlot.day} ${selectedSlot.time}`);
-                    params.set(`entry.${FORM_ENTRY_IDS.name}`, name);
-                    params.set(`entry.${FORM_ENTRY_IDS.email}`, email);
-                    if (optional) params.set(`entry.${FORM_ENTRY_IDS.optional}`, optional);
-                    const url = `${GOOGLE_FORM_URL}?${params.toString()}`;
-                    window.open(url, '_blank');
-                    const t = document.getElementById('toast');
-                    if (t) {
-                        t.textContent = 'Opening Google Form to complete submission…';
-                        t.style.display = 'block';
-                        setTimeout(() => { t.style.display = 'none'; }, 3500);
-                    }
-                }
-            }, 5000);
-        }
-
-        function openFullFormPrefilled() {
-            if (!selectedSlot) return;
-            const name = document.getElementById('modal-name')?.value?.trim() || '';
-            const email = document.getElementById('modal-email')?.value?.trim() || '';
-            const optional = document.getElementById('modal-optional')?.value?.trim() || '';
-            const slotValue = `${selectedSlot.day} ${selectedSlot.time}`;
-
-            const params = new URLSearchParams();
-            params.set('usp', 'pp_url');
-            params.set(`entry.${FORM_ENTRY_IDS.timeSlot}`, slotValue);
-            if (name) params.set(`entry.${FORM_ENTRY_IDS.name}`, name);
-            if (email) params.set(`entry.${FORM_ENTRY_IDS.email}`, email);
-            if (optional) params.set(`entry.${FORM_ENTRY_IDS.optional}`, optional);
-
-            const url = `${GOOGLE_FORM_URL}?${params.toString()}`;
-            window.open(url, '_blank');
+            // Open Google Form with pre-filled data
+            const formUrl = `${GOOGLE_FORM_URL}?usp=pp_url&entry.1936538677=${encodeURIComponent(slot.day + ' ' + slot.time)}`;
+            window.open(formUrl, '_blank');
         }
         
         // Load slots on page load
         loadSlots();
 
-    // Manual refresh button
-    const btn = document.getElementById('refresh-now');
-    if (btn) btn.addEventListener('click', () => loadSlots());
-
-    // Modal buttons
-    const cancelBtn = document.getElementById('modal-cancel');
-    const submitBtn = document.getElementById('modal-submit');
-    if (cancelBtn) cancelBtn.addEventListener('click', closeBookingModal);
-    if (submitBtn) submitBtn.addEventListener('click', submitBooking);
-    const openFormBtn = document.getElementById('modal-open-form');
-    if (openFormBtn) openFormBtn.addEventListener('click', openFullFormPrefilled);
+        // Manual refresh button
+        const btn = document.getElementById('refresh-now');
+        if (btn) btn.addEventListener('click', () => loadSlots());
 
         // Auto-refresh every 10 seconds
         setInterval(loadSlots, 10000);
