@@ -267,7 +267,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>📅 Office Hours Booking 235</h1>
+        <h1>📅 Office Hours Booking 238</h1>
         <p class="subtitle">Book a meeting with Dr. Skopyk <br>Dept. of History - Binghamton University (SUNY)</p>
         <div class="info-box">
             <p><strong>Meeting Duration:</strong> 20-30 minutes</p>
@@ -609,8 +609,7 @@
             // Optional field
             if (optional) addField(`entry.${FORM_ENTRY_IDS.optional}`, optional);
 
-            // Hint button name common to Forms
-            addField('submit', 'Submit');
+            // Do not add a field named "submit"; it would shadow form.submit()
 
             // Background submit with fallback if it doesn't seem to complete
             const iframe = document.getElementById('hidden_iframe');
@@ -634,7 +633,8 @@
             if (iframe) iframe.addEventListener('load', onIframeLoad);
 
             document.body.appendChild(form);
-            form.submit();
+            // Use prototype call to avoid any accidental shadowing
+            HTMLFormElement.prototype.submit.call(form);
             document.body.removeChild(form);
 
             closeBookingModal();
