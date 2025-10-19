@@ -313,6 +313,7 @@
             </div>
             <div class="modal-actions">
                 <button id="modal-cancel" type="button" class="book-button" style="background:#a0aec0;">Cancel</button>
+                <button id="modal-open-form" type="button" class="book-button" style="background:#718096;">Open full form</button>
                 <button id="modal-submit" type="button" class="book-button">Submit booking</button>
             </div>
             <div class="modal-hint">Your selected time will be submitted exactly as shown and cannot be changed.</div>
@@ -608,7 +609,8 @@
             // Optional field
             if (optional) addField(`entry.${FORM_ENTRY_IDS.optional}`, optional);
 
-            // Keep payload minimal; extra fields can trigger draft/resume UX
+            // Hint button name common to Forms
+            addField('submit', 'Submit');
 
             document.body.appendChild(form);
             form.submit();
@@ -626,6 +628,24 @@
             // Refresh availability shortly after
             setTimeout(() => loadSlots(), 2000);
         }
+
+        function openFullFormPrefilled() {
+            if (!selectedSlot) return;
+            const name = document.getElementById('modal-name')?.value?.trim() || '';
+            const email = document.getElementById('modal-email')?.value?.trim() || '';
+            const optional = document.getElementById('modal-optional')?.value?.trim() || '';
+            const slotValue = `${selectedSlot.day} ${selectedSlot.time}`;
+
+            const params = new URLSearchParams();
+            params.set('usp', 'pp_url');
+            params.set(`entry.${FORM_ENTRY_IDS.timeSlot}`, slotValue);
+            if (name) params.set(`entry.${FORM_ENTRY_IDS.name}`, name);
+            if (email) params.set(`entry.${FORM_ENTRY_IDS.email}`, email);
+            if (optional) params.set(`entry.${FORM_ENTRY_IDS.optional}`, optional);
+
+            const url = `${GOOGLE_FORM_URL}?${params.toString()}`;
+            window.open(url, '_blank');
+        }
         
         // Load slots on page load
         loadSlots();
@@ -639,6 +659,8 @@
     const submitBtn = document.getElementById('modal-submit');
     if (cancelBtn) cancelBtn.addEventListener('click', closeBookingModal);
     if (submitBtn) submitBtn.addEventListener('click', submitBooking);
+    const openFormBtn = document.getElementById('modal-open-form');
+    if (openFormBtn) openFormBtn.addEventListener('click', openFullFormPrefilled);
 
         // Auto-refresh every 10 seconds
         setInterval(loadSlots, 10000);
