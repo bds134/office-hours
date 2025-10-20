@@ -1,5 +1,5 @@
 // api/proxy.js
-const UPSTREAM = 'https://script.google.com/macros/s/AKfycbzPsMcdaUyXp8vZIAHmaakPf2NX44TkORPZ4XnCS5VCNz9zKLef1zn7nLGpUMr4o0g/exec';
+const UPSTREAM = 'https://script.google.com/macros/s/AKfycbx1zO8kJmLe3ln6JA2xBfcd8ye3xB5zBTbTOMknz0obZ96t-NlJNSJ3tTgBJIZtndI/exec';
 
 function setCors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
