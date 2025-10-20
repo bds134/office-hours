@@ -1,14 +1,11 @@
-# Book a Meeting with Dr. Skopyk
+# Schedule a Meeting with Dr. Skopyk
 
-![Scan to book a meeting](./frame(1).png)
+![](./frame(1).png){ width=200px }
 
-**Scan the QR code above or visit the link to book a meeting.**
+**To schedule a meeting, scan the QR code above or visit https://bds134.github.io/office-hours/**
 
 ## FALL 2025 **Regular office hours:**
 
 Tuesday 9:00–10:30 am & Wednesday 10:00–11:30 am
 
----
-
-- No appointment needed during regular office hours.
-- For other times, please use the booking system.
+**NB**: No appointment needed during regular office hours. However, scheduled appointments will take precedence over unscheduled visits
