@@ -239,11 +239,17 @@
         
     let selectedSlot = null;
     let selectedSlotKey = null;
-        // Helper: Normalize day string
+        // Helper: Normalize day string (must match Apps Script normalization)
         function normalizeDay(day) {
             if (!day) return '';
-            day = day.trim();
-            return day.charAt(0).toUpperCase() + day.slice(1).toLowerCase();
+            const d = String(day).toLowerCase().trim();
+            const map = {
+                "mon": "monday", "tue": "tuesday", "wed": "wednesday",
+                "thu": "thursday", "fri": "friday", "sat": "saturday", "sun": "sunday",
+                "m": "monday", "t": "tuesday", "w": "wednesday",
+                "th": "thursday", "f": "friday", "sa": "saturday", "su": "sunday"
+            };
+            return map[d] || d;
         }
 
         // Helper: Normalize time string to HH:MM (24h)
@@ -511,6 +517,8 @@
             // POST to Vercel proxy (CORS handled by proxy)
             const endpoint = 'https://office-hours-61xmt8z2u-brads-projects-7fbf4f81.vercel.app/api/proxy';
             const params = new URLSearchParams({ slotKey: selectedSlotKey, name, email });
+            console.log('Submitting booking with slotKey:', selectedSlotKey);
+            console.log('Selected slot data:', selectedSlot);
             try {
                 const res = await fetch(endpoint, {
                     method: 'POST',
