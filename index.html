@@ -439,7 +439,7 @@
                         // Show message when day has slots but none are available
                         const noSlotsDiv = document.createElement('div');
                         noSlotsDiv.className = 'no-slots';
-                        noSlotsDiv.textContent = `Office hours on ${dayAndDate} are fully booked. No additional slots are available for this day.`;
+                        noSlotsDiv.innerHTML = `Office hours on ${dayAndDate} are fully booked. Please email <a href="mailto:bskopyk@binghamton.edu">bskopyk@binghamton.edu</a> if you would like to check additional availability.`;
                         section.appendChild(noSlotsDiv);
                     } else {
                         // Show the slots grid as usual
