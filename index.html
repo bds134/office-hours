@@ -442,6 +442,9 @@
                         grid.className = 'slots-grid';
 
                         daySlots.forEach(slot => {
+                            // Only render available slots in the grid
+                            if (slot.status !== 'Available') return;
+                            
                             const slotDiv = document.createElement('div');
                             slotDiv.className = `slot ${slot.status.toLowerCase()}`;
                             // Attach slotKey for booking
