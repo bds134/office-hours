@@ -439,7 +439,7 @@
                         // Show message when day has slots but none are available
                         const noSlotsDiv = document.createElement('div');
                         noSlotsDiv.className = 'no-slots';
-                        noSlotsDiv.textContent = 'No Additional Time Slots Are Available For This Day';
+                        noSlotsDiv.textContent = `Office hours on ${dayAndDate} are fully booked. No additional slots are available for this day.`;
                         section.appendChild(noSlotsDiv);
                     } else {
                         // Show the slots grid as usual
