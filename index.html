@@ -376,9 +376,9 @@
                 const fourHoursFromNow = new Date(now.getTime() + (4 * 60 * 60 * 1000));
 
                 // Filter slots to exclude those within 4 hours from current time
+                // BUT keep booked slots for display purposes (to show "day full" message)
                 const filteredSlots = slots.filter(slot => {
                     // Parse the slot's date and time
-                    // Date format is expected to be like "Oct 20" or "Oct 21"
                     const slotDateTime = parseSlotDateTime(slot.date, slot.time);
 
                     // If parsing fails, keep the slot (fail open)
@@ -386,7 +386,12 @@
                         return true;
                     }
 
-                    // Only filter out slots that are within 4 hours from now
+                    // Always keep booked slots (for display purposes)
+                    if (slot.status.toLowerCase() === 'booked') {
+                        return slotDateTime >= now; // Only filter out past booked slots
+                    }
+
+                    // For available slots, filter out those within 4 hours
                     return slotDateTime >= fourHoursFromNow;
                 });
 
