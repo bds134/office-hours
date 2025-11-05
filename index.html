@@ -301,6 +301,32 @@
             return `${SHEET_URL}${sep}_=${Date.now()}`;
         }
 
+        // Check if a slot is during regular office hours (exempt from 4-hour rule)
+        function isRegularOfficeHours(slot) {
+            const dayNormalized = slot.day.trim().toLowerCase();
+            const timeNormalized = normalizeTime(slot.time);
+            
+            // Tuesday 9:00 AM - 10:30 AM
+            if (dayNormalized === 'tuesday') {
+                const hour = parseInt(timeNormalized.split(':')[0]);
+                const minute = parseInt(timeNormalized.split(':')[1]);
+                const totalMinutes = hour * 60 + minute;
+                // 9:00 AM = 540 minutes, 10:30 AM = 630 minutes
+                return totalMinutes >= 540 && totalMinutes <= 630;
+            }
+            
+            // Wednesday 10:00 AM - 11:30 AM  
+            if (dayNormalized === 'wednesday') {
+                const hour = parseInt(timeNormalized.split(':')[0]);
+                const minute = parseInt(timeNormalized.split(':')[1]);
+                const totalMinutes = hour * 60 + minute;
+                // 10:00 AM = 600 minutes, 11:30 AM = 690 minutes
+                return totalMinutes >= 600 && totalMinutes <= 690;
+            }
+            
+            return false;
+        }
+
         // Parse slot date and time into a JavaScript Date object
         function parseSlotDateTime(dateStr, timeStr) {
             try {
@@ -377,6 +403,7 @@
 
                 // Filter slots to exclude those within 4 hours from current time
                 // BUT keep booked slots for display purposes (to show "day full" message)
+                // AND keep regular office hours (Tuesday 9-10:30 AM, Wednesday 10-11:30 AM) always open
                 const filteredSlots = slots.filter(slot => {
                     // Parse the slot's date and time
                     const slotDateTime = parseSlotDateTime(slot.date, slot.time);
@@ -391,7 +418,12 @@
                         return slotDateTime >= now; // Only filter out past booked slots
                     }
 
-                    // For available slots, filter out those within 4 hours
+                    // Keep regular office hours always open (exempt from 4-hour rule)
+                    if (isRegularOfficeHours(slot)) {
+                        return slotDateTime >= now; // Only filter out past slots
+                    }
+
+                    // For other available slots, filter out those within 4 hours
                     return slotDateTime >= fourHoursFromNow;
                 });
 
