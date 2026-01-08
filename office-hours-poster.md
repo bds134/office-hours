@@ -4,8 +4,8 @@
 
 **To schedule a meeting, scan the QR code above or visit https://bds134.github.io/office-hours/**
 
-## FALL 2025 **Regular office hours:**
+## SPRING 2026 **Regular office hours:**
 
-Tuesday 9:00–10:30 am & Wednesday 10:00–11:30 am
+Monday 3:15–4:45 pm & Tuesday 9:30–11:00 am
 
 **NB**: No appointment needed during regular office hours. However, scheduled appointments will take precedence over unscheduled visits
