@@ -308,22 +308,22 @@
             const dayNormalized = slot.day.trim().toLowerCase();
             const timeNormalized = normalizeTime(slot.time);
             
-            // Tuesday 9:00 AM - 10:30 AM
+            // Monday 3:15 PM - 4:45 PM
+            if (dayNormalized === 'monday') {
+                const hour = parseInt(timeNormalized.split(':')[0]);
+                const minute = parseInt(timeNormalized.split(':')[1]);
+                const totalMinutes = hour * 60 + minute;
+                // 3:15 PM = 15:15 = 915 minutes, 4:45 PM = 16:45 = 1005 minutes
+                return totalMinutes >= 915 && totalMinutes <= 1005;
+            }
+            
+            // Tuesday 9:30 AM - 11:00 AM  
             if (dayNormalized === 'tuesday') {
                 const hour = parseInt(timeNormalized.split(':')[0]);
                 const minute = parseInt(timeNormalized.split(':')[1]);
                 const totalMinutes = hour * 60 + minute;
-                // 9:00 AM = 540 minutes, 10:30 AM = 630 minutes
-                return totalMinutes >= 540 && totalMinutes <= 630;
-            }
-            
-            // Wednesday 10:00 AM - 11:30 AM  
-            if (dayNormalized === 'wednesday') {
-                const hour = parseInt(timeNormalized.split(':')[0]);
-                const minute = parseInt(timeNormalized.split(':')[1]);
-                const totalMinutes = hour * 60 + minute;
-                // 10:00 AM = 600 minutes, 11:30 AM = 690 minutes
-                return totalMinutes >= 600 && totalMinutes <= 690;
+                // 9:30 AM = 570 minutes, 11:00 AM = 660 minutes
+                return totalMinutes >= 570 && totalMinutes <= 660;
             }
             
             return false;
