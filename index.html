@@ -732,6 +732,22 @@
         document.getElementById('modal-submit').addEventListener('click', submitBooking);
         document.getElementById('request-submit').addEventListener('click', sendRequestEmail);
 
+        function focusRequestFormIfHash() {
+            if (window.location.hash === '#request-box') {
+                const requestBox = document.getElementById('request-box');
+                const requestName = document.getElementById('request-name');
+                if (requestBox) {
+                    requestBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+                if (requestName) {
+                    requestName.focus({ preventScroll: true });
+                }
+            }
+        }
+
+        window.addEventListener('hashchange', focusRequestFormIfHash);
+        focusRequestFormIfHash();
+
         // Auto-refresh every 10 seconds
         setInterval(loadSlots, 10000);
     </script>
