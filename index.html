@@ -264,8 +264,8 @@
             <p><strong>How to book:</strong> Click an available time slot below to open the booking form.</p>
             <p><strong>Location:</strong> Each slot is either <em>by Zoom</em> or <em>in LT 713</em> as shown below. If relevant, a <strong>Zoom Link</strong> will be provided in the confirmation email.</p>
             <p><strong>Confirmation:</strong> You will receive an email with meeting details after booking.</p>
-            <p><strong>Availability:</strong> If you need a time outside the posted hours, please use the request form below. You can also email <a href="mailto:bskopyk@binghamton.edu">bskopyk@binghamton.edu</a> directly.</p>
-            <p><strong>Request a time outside posted hours:</strong> Use the form below to send a request email directly to <a href="mailto:bskopyk@binghamton.edu">bskopyk@binghamton.edu</a>. You must use your @binghamton.edu address.</p>
+            <p><strong>Availability:</strong> If you need a time outside the posted hours, please use the <a href="#request-box">request form below</a>.</p>
+            <p><strong>Request a time outside posted hours:</strong> Use the <a href="#request-box">request form below</a> to send a request to Dr. Skopyk. You must use your @binghamton.edu address.</p>
         </div>
 
         <div id="loading" class="loading">
@@ -274,7 +274,7 @@
 
         <div id="slots-container"></div>
 
-        <div class="request-box">
+        <div id="request-box" class="request-box">
             <h2>Request a time outside posted hours</h2>
             <p>Send a request email to Dr. Skopyk for a meeting time not listed in the regular schedule.</p>
             <label class="request-field">Full name
@@ -283,8 +283,8 @@
             <label class="request-field">Binghamton email
                 <input id="request-email" type="email" placeholder="you@binghamton.edu">
             </label>
-            <label class="request-field">Preferred date or day/time
-                <input id="request-preference" type="text" placeholder="e.g. Tuesday May 14 at 2:00 PM">
+            <label class="request-field">Preferred date(s) or windows
+                <input id="request-preference" type="text" placeholder="e.g. Tuesday afternoon or May 14–15, 2–4 PM">
             </label>
             <label class="request-field">Details / notes
                 <textarea id="request-notes" rows="4" placeholder="Optional: what you'd like to discuss"></textarea>
@@ -547,7 +547,7 @@
                         // Show message when day has slots but none are available
                         const noSlotsDiv = document.createElement('div');
                         noSlotsDiv.className = 'no-slots';
-                        noSlotsDiv.innerHTML = `Office hours on ${dayAndDate} are fully booked. Please email <a href="mailto:bskopyk@binghamton.edu">bskopyk@binghamton.edu</a> if you would like to check additional availability.`;
+                        noSlotsDiv.innerHTML = `Office hours on ${dayAndDate} are fully booked. Please use the <a href="#request-box">request form below</a> if you would like to check additional availability.`;
                         section.appendChild(noSlotsDiv);
                     } else {
                         // Show the slots grid as usual
