@@ -684,7 +684,7 @@
             return /^[^@\s]+@binghamton\.edu$/i.test(email);
         }
 
-        function sendRequestEmail() {
+        async function sendRequestEmail() {
             const name = document.getElementById('request-name').value.trim();
             const email = document.getElementById('request-email').value.trim();
             const preference = document.getElementById('request-preference').value.trim();
@@ -704,20 +704,39 @@
                 return;
             }
 
-            const subject = encodeURIComponent('Office Hours Request Outside Posted Hours');
-            let body = `Name: ${name}%0D%0A`;
-            body += `Email: ${email}%0D%0A`;
-            if (preference) {
-                body += `Preferred day/time: ${preference}%0D%0A`;
-            }
-            if (notes) {
-                body += `%0D%0ANotes:%0D%0A${notes}%0D%0A`;
-            }
-            body += `%0D%0A---%0D%0APlease reply directly to ${email}.`;
+            messageDiv.textContent = 'Sending your request...';
 
-            const mailtoLink = `mailto:bskopyk@binghamton.edu?subject=${subject}&body=${body}`;
-            window.location.href = mailtoLink;
-            messageDiv.textContent = 'Opening your email client to send the request...';
+            const endpoint = 'https://office-hours-nkq4ovqq5-brads-projects-7fbf4f81.vercel.app/api/proxy';
+            const params = new URLSearchParams({
+                action: 'request',
+                name,
+                email,
+                preference,
+                notes
+            });
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params.toString()
+                });
+                const text = await res.text();
+                if (text.trim().toLowerCase() === 'success') {
+                    messageDiv.classList.remove('error');
+                    messageDiv.textContent = 'Request sent successfully. Dr. Skopyk will review it and reply to your email.';
+                    document.getElementById('request-name').value = '';
+                    document.getElementById('request-email').value = '';
+                    document.getElementById('request-preference').value = '';
+                    document.getElementById('request-notes').value = '';
+                } else {
+                    messageDiv.classList.add('error');
+                    messageDiv.textContent = text || 'Unable to send request. Please try again later.';
+                }
+            } catch (err) {
+                messageDiv.classList.add('error');
+                messageDiv.textContent = 'Network error. Please try again.';
+            }
         }
 
         // Load slots on page load
