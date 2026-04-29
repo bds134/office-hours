@@ -198,6 +198,32 @@
             margin: 30px 0;
         }
 
+        #request-modal input[type="text"],
+        #request-modal input[type="email"],
+        #request-modal textarea {
+            font-size: 1.15em;
+            padding: 14px 12px;
+            border-radius: 6px;
+            border: 1.5px solid #cbd5e0;
+            margin-bottom: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #request-modal label {
+            font-size: 1.08em;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        #request-modal-error {
+            color: #c53030;
+            font-size: 0.95em;
+            margin-top: 8px;
+            display: none;
+        }
+
         .request-box h2 {
             margin-bottom: 10px;
             color: #2d3748;
@@ -276,23 +302,9 @@
 
         <div id="request-box" class="request-box">
             <h2>Request a time outside posted hours</h2>
-            <p>Send a request email to Dr. Skopyk for a meeting time not listed in the regular schedule.</p>
-            <label class="request-field">Full name
-                <input id="request-name" type="text" placeholder="Your full name">
-            </label>
-            <label class="request-field">Binghamton email
-                <input id="request-email" type="email" placeholder="you@binghamton.edu">
-            </label>
-            <label class="request-field">Preferred date(s) or windows
-                <input id="request-preference" type="text" placeholder="e.g. Tuesday afternoon or May 14–15, 2–4 PM">
-            </label>
-            <label class="request-field">Details / notes
-                <textarea id="request-notes" rows="4" placeholder="Optional: what you'd like to discuss"></textarea>
-            </label>
-            <div style="display:flex; align-items:center; gap:12px; flex-wrap: wrap;">
-                <button id="request-submit" class="book-button" type="button">Send request email</button>
-                <div id="request-message" class="request-message"></div>
-            </div>
+            <p>Ask for a timing window not listed in the regular schedule. Click below to open the request form.</p>
+            <button id="request-open" class="book-button" type="button">Request outside posted hours</button>
+            <div id="request-message" class="request-message"></div>
         </div>
 
         <!-- Booking Modal -->
@@ -310,6 +322,24 @@
                     <button id="modal-submit" type="button" class="book-button">Submit booking</button>
                 </div>
                 <div id="modal-error" style="color:#c53030; font-size:0.95em; margin-top:8px; display:none;"></div>
+            </div>
+        </div>
+
+        <div id="request-modal"
+            style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:1000; align-items:center; justify-content:center;">
+            <div
+                style="background:#fff; max-width:450px; margin:auto; border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,0.3); padding:24px;">
+                <h2 style="margin-bottom:12px; color:#2d3748;">Request a time outside posted hours</h2>
+                <p style="margin-bottom:16px; color:#4a5568;">Enter your availability window and optional notes.</p>
+                <label>Full name<br><input id="request-name" type="text"></label>
+                <label>Binghamton email<br><input id="request-email" type="email" placeholder="you@binghamton.edu"></label>
+                <label>Preferred date(s) or windows<br><input id="request-preference" type="text" placeholder="e.g. Tuesday afternoon or May 14–15, 2–4 PM"></label>
+                <label>Details / notes<br><textarea id="request-notes" rows="4" placeholder="Optional: what you'd like to discuss"></textarea></label>
+                <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;flex-wrap:wrap;">
+                    <button id="request-cancel" type="button" class="book-button" style="background:#a0aec0;">Cancel</button>
+                    <button id="request-submit" type="button" class="book-button">Submit request</button>
+                </div>
+                <div id="request-modal-error" style="color:#c53030; font-size:0.95em; margin-top:8px; display:none;"></div>
             </div>
         </div>
 
@@ -638,6 +668,20 @@
             document.getElementById('booking-modal').style.display = 'none';
         }
 
+        function openRequestModal(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            document.getElementById('request-modal').style.display = 'flex';
+            document.getElementById('request-modal-error').style.display = 'none';
+            document.getElementById('request-name').focus();
+        }
+
+        function closeRequestModal() {
+            document.getElementById('request-modal').style.display = 'none';
+        }
+
         async function submitBooking() {
             if (!selectedSlot || !selectedSlotKey) return;
             const name = document.getElementById('modal-name').value.trim();
@@ -749,18 +793,18 @@
         // Modal buttons
         document.getElementById('modal-cancel').addEventListener('click', closeBookingModal);
         document.getElementById('modal-submit').addEventListener('click', submitBooking);
+        document.getElementById('request-open').addEventListener('click', openRequestModal);
+        document.getElementById('request-cancel').addEventListener('click', closeRequestModal);
         document.getElementById('request-submit').addEventListener('click', sendRequestEmail);
+
+        document.querySelectorAll('a[href="#request-box"]').forEach(link => {
+            link.addEventListener('click', openRequestModal);
+        });
 
         function focusRequestFormIfHash() {
             if (window.location.hash === '#request-box') {
-                const requestBox = document.getElementById('request-box');
-                const requestName = document.getElementById('request-name');
-                if (requestBox) {
-                    requestBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-                if (requestName) {
-                    requestName.focus({ preventScroll: true });
-                }
+                openRequestModal();
+                history.replaceState(null, '', window.location.pathname + window.location.search);
             }
         }
 
