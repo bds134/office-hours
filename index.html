@@ -190,6 +190,55 @@
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
+        .request-box {
+            background: #f7fafc;
+            border: 1px solid #cbd5e0;
+            padding: 24px;
+            border-radius: 16px;
+            margin: 30px 0;
+        }
+
+        .request-box h2 {
+            margin-bottom: 10px;
+            color: #2d3748;
+            font-size: 1.35em;
+        }
+
+        .request-box p {
+            margin-bottom: 18px;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .request-field {
+            display: block;
+            margin-bottom: 14px;
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        .request-field input,
+        .request-field textarea {
+            width: 100%;
+            font-size: 1em;
+            padding: 12px 14px;
+            border-radius: 8px;
+            border: 1.5px solid #cbd5e0;
+            margin-top: 6px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+
+        .request-message {
+            color: #2d3748;
+            font-size: 0.95em;
+            min-height: 1.25em;
+        }
+
+        .request-message.error {
+            color: #c53030;
+        }
+
         .refresh-note {
             text-align: center;
             margin-top: 20px;
@@ -208,14 +257,15 @@
             <strong>Regular Office Hours for Spring 2026:</strong> Mondays 3:15 PM - 4:45 PM and Tuesdays 9:30 AM - 11:00 AM. Additional slots available by request.
         </p>
         <p class="subtitle">
-            <strong>Beginning Monday, May 11:</strong> Office hours by appointment only until classes resume in August.
+            <strong>Beginning Monday, May 11:</strong> Office hours are available by appointment only until classes resume in August. Use the request form below if you need a time outside the posted schedule.
         </p>
         <div class="info-box">
             <p><strong>Meeting Duration:</strong> Generally 15 - 30 minutes. If you need more time, reserve two consecutive slots.</p>
             <p><strong>How to book:</strong> Click an available time slot below to open the booking form.</p>
             <p><strong>Location:</strong> Each slot is either <em>by Zoom</em> or <em>in LT 713</em> as shown below. If relevant, a <strong>Zoom Link</strong> will be provided in the confirmation email.</p>
             <p><strong>Confirmation:</strong> You will receive an email with meeting details after booking.</p>
-            <p><strong>Availability:</strong> Please <a href="mailto:bskopyk@binghamton.edu">email</a> to check availability outside of posted hours.</p>
+            <p><strong>Availability:</strong> If you need a time outside the posted hours, please use the request form below. You can also email <a href="mailto:bskopyk@binghamton.edu">bskopyk@binghamton.edu</a> directly.</p>
+            <p><strong>Request a time outside posted hours:</strong> Use the form below to send a request email directly to <a href="mailto:bskopyk@binghamton.edu">bskopyk@binghamton.edu</a>. You must use your @binghamton.edu address.</p>
         </div>
 
         <div id="loading" class="loading">
@@ -223,6 +273,27 @@
         </div>
 
         <div id="slots-container"></div>
+
+        <div class="request-box">
+            <h2>Request a time outside posted hours</h2>
+            <p>Send a request email to Dr. Skopyk for a meeting time not listed in the regular schedule.</p>
+            <label class="request-field">Full name
+                <input id="request-name" type="text" placeholder="Your full name">
+            </label>
+            <label class="request-field">Binghamton email
+                <input id="request-email" type="email" placeholder="you@binghamton.edu">
+            </label>
+            <label class="request-field">Preferred date or day/time
+                <input id="request-preference" type="text" placeholder="e.g. Tuesday May 14 at 2:00 PM">
+            </label>
+            <label class="request-field">Details / notes
+                <textarea id="request-notes" rows="4" placeholder="Optional: what you'd like to discuss"></textarea>
+            </label>
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap: wrap;">
+                <button id="request-submit" class="book-button" type="button">Send request email</button>
+                <div id="request-message" class="request-message"></div>
+            </div>
+        </div>
 
         <!-- Booking Modal -->
         <div id="booking-modal"
@@ -550,8 +621,7 @@
         } // <-- Add missing closing brace for loadSlots
 
         function bookSlot(slot) {
-            // Accept slotKey as second arg
-            openBookingModal(slot, slot._key);
+            openBookingModal(slot);
         }
 
         function openBookingModal(slot) {
@@ -579,7 +649,7 @@
                 errorDiv.style.display = 'block';
                 return;
             }
-            if (!/@binghamton\.edu$/i.test(email)) {
+            if (!isBinghamtonEmail(email)) {
                 errorDiv.textContent = 'Please use your @binghamton.edu email address.';
                 errorDiv.style.display = 'block';
                 return;
@@ -610,6 +680,46 @@
             }
         }
 
+        function isBinghamtonEmail(email) {
+            return /^[^@\s]+@binghamton\.edu$/i.test(email);
+        }
+
+        function sendRequestEmail() {
+            const name = document.getElementById('request-name').value.trim();
+            const email = document.getElementById('request-email').value.trim();
+            const preference = document.getElementById('request-preference').value.trim();
+            const notes = document.getElementById('request-notes').value.trim();
+            const messageDiv = document.getElementById('request-message');
+            messageDiv.classList.remove('error');
+            messageDiv.textContent = '';
+
+            if (!name || !email) {
+                messageDiv.classList.add('error');
+                messageDiv.textContent = 'Please enter your name and Binghamton email.';
+                return;
+            }
+            if (!isBinghamtonEmail(email)) {
+                messageDiv.classList.add('error');
+                messageDiv.textContent = 'Please use your @binghamton.edu email address.';
+                return;
+            }
+
+            const subject = encodeURIComponent('Office Hours Request Outside Posted Hours');
+            let body = `Name: ${name}%0D%0A`;
+            body += `Email: ${email}%0D%0A`;
+            if (preference) {
+                body += `Preferred day/time: ${preference}%0D%0A`;
+            }
+            if (notes) {
+                body += `%0D%0ANotes:%0D%0A${notes}%0D%0A`;
+            }
+            body += `%0D%0A---%0D%0APlease reply directly to ${email}.`;
+
+            const mailtoLink = `mailto:bskopyk@binghamton.edu?subject=${subject}&body=${body}`;
+            window.location.href = mailtoLink;
+            messageDiv.textContent = 'Opening your email client to send the request...';
+        }
+
         // Load slots on page load
         loadSlots();
 
@@ -620,6 +730,7 @@
         // Modal buttons
         document.getElementById('modal-cancel').addEventListener('click', closeBookingModal);
         document.getElementById('modal-submit').addEventListener('click', submitBooking);
+        document.getElementById('request-submit').addEventListener('click', sendRequestEmail);
 
         // Auto-refresh every 10 seconds
         setInterval(loadSlots, 10000);
