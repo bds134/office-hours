@@ -190,6 +190,103 @@
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
+        .request-box {
+            background: #f7fafc;
+            border: 1px solid #cbd5e0;
+            padding: 24px;
+            border-radius: 16px;
+            margin: 30px 0;
+        }
+
+        #request-modal input[type="text"],
+        #request-modal input[type="email"],
+        #request-modal textarea {
+            font-size: 1.15em;
+            padding: 14px 12px;
+            border-radius: 6px;
+            border: 1.5px solid #cbd5e0;
+            margin-bottom: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #request-modal label {
+            font-size: 1.08em;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        #request-modal-status {
+            color: #2d3748;
+            font-size: 0.95em;
+            margin-top: 8px;
+            display: none;
+        }
+
+        #request-modal-status.success {
+            color: #2f855a;
+        }
+
+        #request-modal-status.error {
+            color: #c53030;
+        }
+
+        #request-modal > div,
+        #booking-modal > div {
+            width: min(92vw, 450px);
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+
+        #request-modal,
+        #booking-modal {
+            align-items: flex-start;
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+
+        .request-box h2 {
+            margin-bottom: 10px;
+            color: #2d3748;
+            font-size: 1.35em;
+        }
+
+        .request-box p {
+            margin-bottom: 18px;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .request-field {
+            display: block;
+            margin-bottom: 14px;
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        .request-field input,
+        .request-field textarea {
+            width: 100%;
+            font-size: 1em;
+            padding: 12px 14px;
+            border-radius: 8px;
+            border: 1.5px solid #cbd5e0;
+            margin-top: 6px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+
+        .request-message {
+            color: #2d3748;
+            font-size: 0.95em;
+            min-height: 1.25em;
+        }
+
+        .request-message.error {
+            color: #c53030;
+        }
+
         .refresh-note {
             text-align: center;
             margin-top: 20px;
@@ -207,12 +304,15 @@
         <p class="subtitle">
             <strong>Regular Office Hours for Spring 2026:</strong> Mondays 2:30 PM - 4:00 PM and Thursdays 9:30 AM - 11:00 AM. Additional slots available by request.
         </p>
+        <p class="subtitle">
+            <strong>Beginning Monday, May 11:</strong> Office hours are available by appointment only until classes resume in August. Use the request form below if you need a time outside the posted schedule.
+        </p>
         <div class="info-box">
             <p><strong>Meeting Duration:</strong> Generally 15 - 30 minutes. If you need more time, reserve two consecutive slots.</p>
             <p><strong>How to book:</strong> Click an available time slot below to open the booking form.</p>
             <p><strong>Location:</strong> Each slot is either <em>by Zoom</em> or <em>in LT 713</em> as shown below. If relevant, a <strong>Zoom Link</strong> will be provided in the confirmation email.</p>
             <p><strong>Confirmation:</strong> You will receive an email with meeting details after booking.</p>
-            <p><strong>Availability:</strong> Please <a href="mailto:bskopyk@binghamton.edu">email</a> to check availability outside of posted hours.</p>
+            <p><strong>Request a time outside posted hours:</strong> Use the <a href="#request-box">request form below</a> to send a request to Dr. Skopyk. You must use your @binghamton.edu address.</p>
         </div>
 
         <div id="loading" class="loading">
@@ -220,6 +320,13 @@
         </div>
 
         <div id="slots-container"></div>
+
+        <div id="request-box" class="request-box">
+            <h2>Request a time outside posted hours</h2>
+            <p>Ask for a timing window not listed in the regular schedule. Click below to open the request form.</p>
+            <button id="request-open" class="book-button" type="button">Request outside posted hours</button>
+            <div id="request-message" class="request-message"></div>
+        </div>
 
         <!-- Booking Modal -->
         <div id="booking-modal"
@@ -236,6 +343,24 @@
                     <button id="modal-submit" type="button" class="book-button">Submit booking</button>
                 </div>
                 <div id="modal-error" style="color:#c53030; font-size:0.95em; margin-top:8px; display:none;"></div>
+            </div>
+        </div>
+
+        <div id="request-modal"
+            style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:1000; align-items:center; justify-content:center;">
+            <div
+                style="background:#fff; max-width:450px; margin:auto; border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,0.3); padding:24px;">
+                <h2 style="margin-bottom:12px; color:#2d3748;">Request a time outside posted hours</h2>
+                <p style="margin-bottom:16px; color:#4a5568;">Enter your availability window and optional notes.</p>
+                <label>Full name<br><input id="request-name" type="text"></label>
+                <label>Binghamton email<br><input id="request-email" type="email" placeholder="you@binghamton.edu"></label>
+                <label>Preferred date(s) or windows<br><input id="request-preference" type="text" placeholder="e.g. Tuesday afternoon or May 14–15, 2–4 PM"></label>
+                <label>Details / notes<br><textarea id="request-notes" rows="4" placeholder="Optional: what you'd like to discuss"></textarea></label>
+                <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;flex-wrap:wrap;">
+                    <button id="request-cancel" type="button" class="book-button" style="background:#a0aec0;">Cancel</button>
+                    <button id="request-submit" type="button" class="book-button">Submit request</button>
+                </div>
+                <div id="request-modal-status" style="color:#2d3748; font-size:0.95em; margin-top:8px; display:none;"></div>
             </div>
         </div>
 
@@ -473,7 +598,7 @@
                         // Show message when day has slots but none are available
                         const noSlotsDiv = document.createElement('div');
                         noSlotsDiv.className = 'no-slots';
-                        noSlotsDiv.innerHTML = `Office hours on ${dayAndDate} are fully booked. Please email <a href="mailto:bskopyk@binghamton.edu">bskopyk@binghamton.edu</a> if you would like to check additional availability.`;
+                        noSlotsDiv.innerHTML = `Office hours on ${dayAndDate} are fully booked. Please use the <a href="#request-box">request form below</a> if you would like to check additional availability.`;
                         section.appendChild(noSlotsDiv);
                     } else {
                         // Show the slots grid as usual
@@ -547,8 +672,7 @@
         } // <-- Add missing closing brace for loadSlots
 
         function bookSlot(slot) {
-            // Accept slotKey as second arg
-            openBookingModal(slot, slot._key);
+            openBookingModal(slot);
         }
 
         function openBookingModal(slot) {
@@ -565,6 +689,20 @@
             document.getElementById('booking-modal').style.display = 'none';
         }
 
+        function openRequestModal(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            document.getElementById('request-modal').style.display = 'flex';
+            document.getElementById('request-modal-error').style.display = 'none';
+            document.getElementById('request-name').focus();
+        }
+
+        function closeRequestModal() {
+            document.getElementById('request-modal').style.display = 'none';
+        }
+
         async function submitBooking() {
             if (!selectedSlot || !selectedSlotKey) return;
             const name = document.getElementById('modal-name').value.trim();
@@ -576,7 +714,7 @@
                 errorDiv.style.display = 'block';
                 return;
             }
-            if (!/@binghamton\.edu$/i.test(email)) {
+            if (!isBinghamtonEmail(email)) {
                 errorDiv.textContent = 'Please use your @binghamton.edu email address.';
                 errorDiv.style.display = 'block';
                 return;
@@ -607,6 +745,83 @@
             }
         }
 
+        function isBinghamtonEmail(email) {
+            return /^[^@\s]+@binghamton\.edu$/i.test(email);
+        }
+
+        async function sendRequestEmail() {
+            const name = document.getElementById('request-name').value.trim();
+            const email = document.getElementById('request-email').value.trim();
+            const preference = document.getElementById('request-preference').value.trim();
+            const notes = document.getElementById('request-notes').value.trim();
+            const modalStatus = document.getElementById('request-modal-status');
+            const outerMessage = document.getElementById('request-message');
+
+            modalStatus.classList.remove('success', 'error');
+            modalStatus.style.display = 'none';
+            modalStatus.textContent = '';
+            if (outerMessage) {
+                outerMessage.textContent = '';
+            }
+
+            if (!name || !email) {
+                modalStatus.classList.add('error');
+                modalStatus.style.display = 'block';
+                modalStatus.textContent = 'Please enter your name and Binghamton email.';
+                return;
+            }
+            if (!isBinghamtonEmail(email)) {
+                modalStatus.classList.add('error');
+                modalStatus.style.display = 'block';
+                modalStatus.textContent = 'Please use your @binghamton.edu email address.';
+                return;
+            }
+
+            modalStatus.style.display = 'block';
+            modalStatus.textContent = 'Sending your request...';
+
+            const endpoint = 'https://office-hours-nkq4ovqq5-brads-projects-7fbf4f81.vercel.app/api/proxy';
+            const params = new URLSearchParams({
+                action: 'request',
+                name,
+                email,
+                preference,
+                notes
+            });
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params.toString()
+                });
+                const text = await res.text();
+                if (text.trim().toLowerCase() === 'success') {
+                    modalStatus.classList.add('success');
+                    modalStatus.textContent = 'Request sent successfully. Dr. Skopyk will review it and reply to your email.';
+                    document.getElementById('request-name').value = '';
+                    document.getElementById('request-email').value = '';
+                    document.getElementById('request-preference').value = '';
+                    document.getElementById('request-notes').value = '';
+                    if (outerMessage) {
+                        outerMessage.textContent = 'Request sent successfully.';
+                    }
+                    setTimeout(() => {
+                        closeRequestModal();
+                        modalStatus.style.display = 'none';
+                    }, 1500);
+                } else {
+                    modalStatus.classList.add('error');
+                    modalStatus.style.display = 'block';
+                    modalStatus.textContent = text || 'Unable to send request. Please try again later.';
+                }
+            } catch (err) {
+                modalStatus.classList.add('error');
+                modalStatus.style.display = 'block';
+                modalStatus.textContent = 'Network error. Please try again.';
+            }
+        }
+
         // Load slots on page load
         loadSlots();
 
@@ -617,6 +832,23 @@
         // Modal buttons
         document.getElementById('modal-cancel').addEventListener('click', closeBookingModal);
         document.getElementById('modal-submit').addEventListener('click', submitBooking);
+        document.getElementById('request-open').addEventListener('click', openRequestModal);
+        document.getElementById('request-cancel').addEventListener('click', closeRequestModal);
+        document.getElementById('request-submit').addEventListener('click', sendRequestEmail);
+
+        document.querySelectorAll('a[href="#request-box"]').forEach(link => {
+            link.addEventListener('click', openRequestModal);
+        });
+
+        function focusRequestFormIfHash() {
+            if (window.location.hash === '#request-box') {
+                openRequestModal();
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+        }
+
+        window.addEventListener('hashchange', focusRequestFormIfHash);
+        focusRequestFormIfHash();
 
         // Auto-refresh every 10 seconds
         setInterval(loadSlots, 10000);
