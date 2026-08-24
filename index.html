@@ -205,7 +205,7 @@
         <p class="subtitle">Schedule a meeting with Dr. Skopyk <br> History Department - Binghamton University (SUNY)
         </p>
         <p class="subtitle">
-            <strong>Regular Office Hours for Spring 2026:</strong> Mondays 3:15 PM - 4:45 PM and Tuesdays 9:30 AM - 11:00 AM. Additional slots available by request.
+            <strong>Regular Office Hours for Spring 2026:</strong> Mondays 2:30 PM - 4:00 PM and Thursdays 9:30 AM - 11:00 AM. Additional slots available by request.
         </p>
         <div class="info-box">
             <p><strong>Meeting Duration:</strong> Generally 15 - 30 minutes. If you need more time, reserve two consecutive slots.</p>
@@ -308,17 +308,17 @@
             const dayNormalized = slot.day.trim().toLowerCase();
             const timeNormalized = normalizeTime(slot.time);
             
-            // Monday 3:15 PM - 4:45 PM
+            // Monday 2:30 PM - 4:00 PM
             if (dayNormalized === 'monday') {
                 const hour = parseInt(timeNormalized.split(':')[0]);
                 const minute = parseInt(timeNormalized.split(':')[1]);
                 const totalMinutes = hour * 60 + minute;
-                // 3:15 PM = 15:15 = 915 minutes, 4:45 PM = 16:45 = 1005 minutes
-                return totalMinutes >= 915 && totalMinutes <= 1005;
+                // 2:30 PM = 14:30 = 870 minutes, 4:00 PM = 16:00 = 960 minutes
+                return totalMinutes >= 870 && totalMinutes <= 960;
             }
             
-            // Tuesday 9:30 AM - 11:00 AM  
-            if (dayNormalized === 'tuesday') {
+            // Thursday 9:30 AM - 11:00 AM  
+            if (dayNormalized === 'thursday') {
                 const hour = parseInt(timeNormalized.split(':')[0]);
                 const minute = parseInt(timeNormalized.split(':')[1]);
                 const totalMinutes = hour * 60 + minute;
@@ -405,7 +405,7 @@
 
                 // Filter slots to exclude those within 4 hours from current time
                 // BUT keep booked slots for display purposes (to show "day full" message)
-                // AND keep regular office hours (Tuesday 9-10:30 AM, Wednesday 10-11:30 AM) always open
+                // AND keep regular office hours always open
                 const filteredSlots = slots.filter(slot => {
                     // Parse the slot's date and time
                     const slotDateTime = parseSlotDateTime(slot.date, slot.time);
