@@ -522,7 +522,10 @@
                 const slots = rows.map(row => {
                     const [date, day, time, studentName, studentEmail, status, location] = row.split(',').map(s => s.trim());
                     return { date, day, time, studentName, studentEmail, status, location };
-                }).filter(slot => slot.date); // Remove empty rows
+                }).filter(slot => {
+                    // Do not render spreadsheet formula errors as appointment dates.
+                    return slot.date && !Object.values(slot).some(value => /^#(?:REF|VALUE|N\/A|DIV\/0|NAME|NUM|NULL)!?$/i.test(value));
+                });
 
                 // Get current time in user's local timezone
                 const now = new Date();
