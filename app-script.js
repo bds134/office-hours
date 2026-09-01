@@ -79,6 +79,7 @@ function doGet(e) {
     }
 
     const slotKey = e.parameter.slotKey;
+    const normalizedSlotKey = normalizeSlotKey(slotKey);
 
     if (!slotKey || !name || !email) {
       return ContentService.createTextOutput('Missing required parameters')
@@ -97,7 +98,7 @@ function doGet(e) {
       const rowKey = `${rowDate}|${rowDay}|${normalizeTime(rowTime)}|${rowLocation}`;
       const status = row[5];
 
-      if (rowKey === slotKey) {
+      if (rowKey === normalizedSlotKey) {
         // Check if already booked
         if (status && status.toLowerCase() === 'booked') {
           return ContentService.createTextOutput('Slot not available')
@@ -289,6 +290,28 @@ function normalizeTime(time) {
 
   // IMPORTANT: Pad hours to 2 digits
   return `${hours.toString().padStart(2, '0')}:${minutes}`;
+}
+
+function normalizeSlotKey(slotKey) {
+  if (!slotKey) return '';
+  const parts = String(slotKey).split('|');
+  if (parts.length !== 4) return String(slotKey).trim();
+
+  return `${normalizeDate(parts[0])}|${normalizeDay(parts[1])}|${normalizeTime(parts[2])}|${normalizeLocation(parts[3])}`;
+}
+
+function normalizeDate(date) {
+  if (!date) return '';
+  const match = String(date).trim().match(/^([A-Za-z]+)\s+(\d{1,2})$/);
+  if (!match) return String(date).trim();
+
+  const months = {
+    january: 'Jan', february: 'Feb', march: 'Mar', april: 'Apr',
+    may: 'May', june: 'Jun', july: 'Jul', august: 'Aug',
+    september: 'Sep', october: 'Oct', november: 'Nov', december: 'Dec'
+  };
+  const month = months[match[1].toLowerCase()];
+  return month ? `${month} ${parseInt(match[2], 10)}` : String(date).trim();
 }
 
 function normalizeLocation(location) {

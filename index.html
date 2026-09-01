@@ -190,6 +190,13 @@
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
+        .book-button:disabled {
+            opacity: 0.7;
+            cursor: wait;
+            transform: none;
+            box-shadow: none;
+        }
+
         .request-box {
             background: #f7fafc;
             border: 1px solid #cbd5e0;
@@ -406,9 +413,24 @@
             return (loc || '').trim().toLowerCase();
         }
 
+        // Match Apps Script's abbreviated month format for CSV dates.
+        function normalizeDate(date) {
+            if (!date) return '';
+            const match = String(date).trim().match(/^([A-Za-z]+)\s+(\d{1,2})$/);
+            if (!match) return String(date).trim();
+
+            const months = {
+                january: 'Jan', february: 'Feb', march: 'Mar', april: 'Apr',
+                may: 'May', june: 'Jun', july: 'Jul', august: 'Aug',
+                september: 'Sep', october: 'Oct', november: 'Nov', december: 'Dec'
+            };
+            const month = months[match[1].toLowerCase()];
+            return month ? `${month} ${parseInt(match[2], 10)}` : String(date).trim();
+        }
+
         // Helper: Generate slot key
         function slotKey(slot) {
-            return `${slot.date}|${normalizeDay(slot.day)}|${normalizeTime(slot.time)}|${normalizeLocation(slot.location)}`;
+            return `${normalizeDate(slot.date)}|${normalizeDay(slot.day)}|${normalizeTime(slot.time)}|${normalizeLocation(slot.location)}`;
         }
 
         // Location labels per day
@@ -708,6 +730,7 @@
             const name = document.getElementById('modal-name').value.trim();
             const email = document.getElementById('modal-email').value.trim();
             const errorDiv = document.getElementById('modal-error');
+            const submitButton = document.getElementById('modal-submit');
             errorDiv.style.display = 'none';
             if (!name || !email) {
                 errorDiv.textContent = 'Please enter your name and email.';
@@ -719,6 +742,8 @@
                 errorDiv.style.display = 'block';
                 return;
             }
+            submitButton.disabled = true;
+            submitButton.textContent = 'Submitting...';
             // POST to Vercel proxy (CORS handled by proxy)
             const endpoint = 'https://office-hours-nkq4ovqq5-brads-projects-7fbf4f81.vercel.app/api/proxy';
             const params = new URLSearchParams({ slotKey: selectedSlotKey, name, email });
@@ -742,6 +767,9 @@
             } catch (err) {
                 errorDiv.textContent = 'Network error. Please try again.';
                 errorDiv.style.display = 'block';
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Submit booking';
             }
         }
 
